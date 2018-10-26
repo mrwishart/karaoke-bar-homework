@@ -6,9 +6,9 @@ class GuestTest < Minitest::Test
 
   def setup
 
-    @guest1 = Guest.new("Bob", 25, "Living on a Prayer")
-    @guest2 = Guest.new("Frank", 38, "Margaritaville")
-    @guest3 = Guest.new("Robert", 56, "Bohemian Rhapsody")
+    @guest1 = Guest.new("Bob", 25, "Living on a Prayer", 200)
+    @guest2 = Guest.new("Frank", 38, "Margaritaville", 300)
+    @guest3 = Guest.new("Robert", 56, "Bohemian Rhapsody", 400)
 
   end
 
@@ -22,6 +22,10 @@ class GuestTest < Minitest::Test
 
   def test_guest_song
     assert_equal("Bohemian Rhapsody", @guest3.favourite_song)
+  end
+
+  def test_can_afford
+    assert_equal(false, @guest1.can_afford?(201))
   end
 
 end

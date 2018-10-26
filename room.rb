@@ -44,9 +44,7 @@ class Room
     # Add guest
     @occupants << guest
 
-    update_remaining_spaces
-
-    return @result.room_booked
+    return booking_successful
 
   end
 
@@ -57,20 +55,24 @@ class Room
     # Check if room is full
     return @result.room_full if @remaining_spaces < guests.count
 
+    #See if group can afford room
+    #return @result.group_cant_afford if !can_group_afford(guests)
+
+    #Only allow reservation change if room is currently empty
+    @reserved = to_reserve if @occupants.empty?
+
     # Add guests
     @occupants.concat(guests)
 
-    update_remaining_spaces
-
-    @reserved = to_reserve
-
-    return @result.room_booked
+    return booking_successful
 
   end
 
   def remove_guest(guest)
     #Check if room is empty
     return @result.room_empty if @occupants.empty?
+
+    return @result.group_cancel if @reserved
 
     removed_guest = @occupants.delete(guest)
 
@@ -83,6 +85,10 @@ class Room
   def remove_guests(guests)
     #Check if room is empty
     return @result.room_empty if @occupants.empty?
+
+    #If reserved, clear entire booking
+    return empty_room if @reserved
+
     #Remove each guest from room
     removed_guests = guests.map{ |guest| @occupants.delete(guest) }
 
@@ -91,6 +97,21 @@ class Room
     return @result.guest_404 if removed_guests.empty?
 
     return remove_successful
+
+  end
+
+  def empty_room
+    @occupants = []
+    update_remaining_spaces
+    unreserve_room
+    return @result.room_emptied
+  end
+
+  def booking_successful
+
+    update_remaining_spaces
+
+    return @result.room_booked
 
   end
 
@@ -113,6 +134,14 @@ class Room
     @playlist.concat(songs)
     #Remove duplicate songs
     @playlist.uniq!
+  end
+
+  def remove_song(song)
+    @playlist.delete(song)
+  end
+
+  def find_song(song)
+    return @playlist.find {|track| track == song}
   end
 
   def unreserve_room

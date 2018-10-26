@@ -12,6 +12,14 @@ class Message
     return "Guest not found in this room"
   end
 
+  def group_cancel
+    return "Can't remove single guest from reserved room. Must cancel whole group or unreserve room."
+  end
+
+  def room_emptied
+    return "Booking cancelled, room emptied entirely"
+  end
+
   def guest_unbooked
     return "Guest successfully unbooked"
   end

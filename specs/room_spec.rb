@@ -15,11 +15,12 @@ class RoomTest < MiniTest::Test
     @song2 = Song.new("With Or Without You", "U2", 296, "Rock", false)
     @song3 = Song.new("Under Pressure", "Queen & David Bowie", 248, "Pop", true)
 
-    @guest1 = Guest.new("Bob", 25, "Living on a Prayer")
-    @guest2 = Guest.new("Frank", 38, "Margaritaville")
-    @guest3 = Guest.new("Robert", 56, "Bohemian Rhapsody")
+    @guest1 = Guest.new("Bob", 25, "Living on a Prayer", 200)
+    @guest2 = Guest.new("Frank", 38, "Margaritaville", 300)
+    @guest3 = Guest.new("Robert", 56, "Bohemian Rhapsody", 400)
 
     @allguests = [@guest1, @guest2, @guest3]
+    @allsongs = [@song1, @song2, @song3]
 
     @room1 = Room.new("Amazon", 10, 150.00)
     @room2 = Room.new("Nile", 5, 60.00)
@@ -155,6 +156,15 @@ class RoomTest < MiniTest::Test
 
   end
 
+  def test_group_cant_reserve_nonempty_room
+
+    @room1.book_guest(@guest1)
+    @room1.book_guests([@guest2, @guest3], true)
+
+    assert_equal(false, @room1.reserved)
+
+  end
+
   def test_add_group_reserved_room
 
     @room1.book_guests([@guest1, @guest2], true)
@@ -178,7 +188,7 @@ class RoomTest < MiniTest::Test
 
   def test_remove_two_guests__successful
 
-    @room1.book_guests(@allguests, true)
+    @room1.book_guests(@allguests, false)
     @room1.remove_guests([@guest1, @guest3])
 
     assert_equal(9, @room1.remaining_spaces)
@@ -187,7 +197,7 @@ class RoomTest < MiniTest::Test
 
   def test_remove_two_guests__try_to_remove_twice
 
-    @room1.book_guests(@allguests, true)
+    @room1.book_guests(@allguests, false)
     @room1.remove_guests([@guest1, @guest1])
 
     assert_equal(8, @room1.remaining_spaces)
@@ -202,6 +212,58 @@ class RoomTest < MiniTest::Test
 
     assert_equal(@testresult.guest_404, outcome)
     assert_equal(9, @room1.remaining_spaces)
+
+  end
+
+  def test_find_song
+
+    @room1.add_songs(@allsongs)
+
+    assert_equal(@song2, @room1.find_song(@song2) )
+
+  end
+
+  def test_remove_song
+
+    @room1.add_songs(@allsongs)
+
+    @room1.remove_song(@song2)
+
+    assert_nil(@room1.find_song(@song2))
+    assert_equal(2, @room1.number_of_songs)
+
+  end
+
+  def test_empty_room
+
+    @room1.book_guests(@allguests)
+
+    @room1.empty_room
+
+    assert_equal(10, @room1.remaining_spaces)
+
+  end
+
+  def test_remove_single_guest_from_reserved_room
+
+    @room1.book_guests(@allguests, true)
+
+    outcome = @room1.remove_guest(@guest1)
+
+    assert_equal(@testresult.group_cancel, outcome)
+    assert_equal(7, @room1.remaining_spaces)
+
+  end
+
+  def test_remove_two_guests_from_reserved_room
+
+    @room1.book_guests(@allguests, true)
+
+    outcome = @room1.remove_guests([@guest1, @guest2])
+
+    assert_equal(@testresult.room_emptied, outcome)
+    assert_equal(false, @room1.reserved)
+    assert_equal(10, @room1.remaining_spaces)
 
   end
 
