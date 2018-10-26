@@ -29,7 +29,7 @@ class SongTest < Minitest::Test
   end
 
   def test_is_song_duo
-    assert_equal(true, @song3.duo)
+    assert_equal(true, @song3.is_duo)
   end
 
 end

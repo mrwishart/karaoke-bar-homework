@@ -18,6 +18,10 @@ class Room
     @result = Message.new
   end
 
+  def number_of_songs
+    return @playlist.count
+  end
+
   def update_remaining_spaces
     @remaining_spaces = @capacity - @occupants.count
   end
@@ -43,21 +47,34 @@ class Room
     update_remaining_spaces
 
     return @result.room_booked
-    
+
+  end
+
+  def book_guests(guests, to_reserve=false)
+    # Check if room is reserved
+    return @result.room_reserved if @reserved
+
+    # Check if room is full
+    return @result.room_full if @remaining_spaces < guests.count
+
+    # Add guests
+    @occupants.concat(guests)
+
+    update_remaining_spaces
+
+    @reserved = to_reserve
+
+    return @result.room_booked
+
   end
 
   def remove_guest(guest)
     #Check if room is empty
-    return @result.room_empty if @occupants.count == 0
+    return @result.room_empty if @occupants.empty?
 
-    #Look for guest
-    found_guest = @occupants.find{ |occupant| occupant == guest }
+    removed_guest = @occupants.delete(guest)
 
-    #Guest 404: send back message
-    return @result.guest_404 if found_guest.nil?
-
-    #Remove guest
-    @occupants.delete(guest)
+    return @result.guest_404 if removed_guest.nil?
 
     update_remaining_spaces
 
@@ -66,5 +83,17 @@ class Room
     return @result.guest_unbooked
 
   end
+
+  def add_song(song)
+    return if @playlist.include?(song)
+    @playlist << song
+  end
+
+  def add_songs(songs)
+    @playlist.concat(songs)
+    #Remove duplicate songs
+    @playlist.uniq!
+  end
+
 
 end

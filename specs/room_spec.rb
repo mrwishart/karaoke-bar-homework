@@ -3,12 +3,17 @@ require('minitest/rg')
 require_relative('../room')
 require_relative('../guest')
 require_relative('../message')
+require_relative('../song')
 
 class RoomTest < MiniTest::Test
 
   def setup
 
     @testresult = Message.new
+
+    @song1 = Song.new("Bohemian Rhapsody", "Queen", 355, "Rock", false)
+    @song2 = Song.new("With Or Without You", "U2", 296, "Rock", false)
+    @song3 = Song.new("Under Pressure", "Queen & David Bowie", 248, "Pop", true)
 
     @guest1 = Guest.new("Bob", 25, "Living on a Prayer")
     @guest2 = Guest.new("Frank", 38, "Margaritaville")
@@ -79,6 +84,84 @@ class RoomTest < MiniTest::Test
     assert_equal(@testresult.guest_unbooked,@room1.remove_guest(@guest1))
     assert_equal("Frank", @room1.list_occupants)
     assert_equal(9, @room1.remaining_spaces)
+
+  end
+
+  def test_remove_guest__not_found
+
+    @room1.book_guest(@guest1)
+    @room1.book_guest(@guest2)
+
+    assert_equal(@testresult.guest_404,@room1.remove_guest(@guest3))
+    assert_equal("Bob, Frank", @room1.list_occupants)
+    assert_equal(8, @room1.remaining_spaces)
+
+  end
+
+  def test_number_of_songs
+    assert_equal(0, @room1.number_of_songs)
+  end
+
+  def test_add_song
+
+    @room1.add_song(@song1)
+    @room1.add_song(@song2)
+
+    assert_equal(2, @room1.number_of_songs)
+
+  end
+
+  def test_add_song_twice
+
+    @room1.add_song(@song1)
+    @room1.add_song(@song1)
+
+    assert_equal(1, @room1.number_of_songs)
+
+  end
+
+  def test_add_songs
+
+    @room1.add_songs([@song1, @song2])
+
+    assert_equal(2, @room1.number_of_songs)
+
+  end
+
+  def test_add_songs_check_no_duplicates
+
+    @room1.add_songs([@song1, @song2, @song1, @song3])
+
+    assert_equal(3, @room1.number_of_songs)
+
+  end
+
+  def test_add_group_successful
+
+    @room1.book_guests([@guest1, @guest2])
+
+    assert_equal(8, @room1.remaining_spaces)
+
+  end
+
+  def test_add_group_reservation
+
+    @room1.book_guests([@guest1, @guest2], true)
+
+    assert_equal(8, @room1.remaining_spaces)
+    assert_equal(true, @room1.reserved)
+
+  end
+
+  def test_add_group_reserved_room
+
+    @room1.book_guests([@guest1, @guest2], true)
+    outcome1 = @room1.book_guest(@guest3)
+    outcome2 = @room1.book_guests([@guest1, @guest3])
+
+    assert_equal(@testresult.room_reserved, outcome1)
+    assert_equal(@testresult.room_reserved, outcome2)
+    assert_equal(8, @room1.remaining_spaces)
 
   end
 
