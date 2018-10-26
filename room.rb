@@ -76,9 +76,29 @@ class Room
 
     return @result.guest_404 if removed_guest.nil?
 
+    return remove_successful
+
+  end
+
+  def remove_guests(guests)
+    #Check if room is empty
+    return @result.room_empty if @occupants.empty?
+    #Remove each guest from room
+    removed_guests = guests.map{ |guest| @occupants.delete(guest) }
+
+    removed_guests.compact!
+
+    return @result.guest_404 if removed_guests.empty?
+
+    return remove_successful
+
+  end
+
+  def remove_successful
+
     update_remaining_spaces
 
-    @reserved = false
+    unreserve_room if @reserved
 
     return @result.guest_unbooked
 
@@ -95,5 +115,8 @@ class Room
     @playlist.uniq!
   end
 
+  def unreserve_room
+    @reserved = false
+  end
 
 end

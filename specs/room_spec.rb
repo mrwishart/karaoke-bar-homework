@@ -19,6 +19,8 @@ class RoomTest < MiniTest::Test
     @guest2 = Guest.new("Frank", 38, "Margaritaville")
     @guest3 = Guest.new("Robert", 56, "Bohemian Rhapsody")
 
+    @allguests = [@guest1, @guest2, @guest3]
+
     @room1 = Room.new("Amazon", 10, 150.00)
     @room2 = Room.new("Nile", 5, 60.00)
     @fullroom = Room.new("Zero", 0, 0)
@@ -162,6 +164,44 @@ class RoomTest < MiniTest::Test
     assert_equal(@testresult.room_reserved, outcome1)
     assert_equal(@testresult.room_reserved, outcome2)
     assert_equal(8, @room1.remaining_spaces)
+
+  end
+
+  def test_add_group_too_large
+
+    outcome = @booth.book_guests([@guest1, @guest2])
+
+    assert_equal(@testresult.room_full, outcome)
+    assert_equal(1, @booth.remaining_spaces)
+
+  end
+
+  def test_remove_two_guests__successful
+
+    @room1.book_guests(@allguests, true)
+    @room1.remove_guests([@guest1, @guest3])
+
+    assert_equal(9, @room1.remaining_spaces)
+
+  end
+
+  def test_remove_two_guests__try_to_remove_twice
+
+    @room1.book_guests(@allguests, true)
+    @room1.remove_guests([@guest1, @guest1])
+
+    assert_equal(8, @room1.remaining_spaces)
+    assert_equal(false, @room1.reserved)
+
+  end
+
+  def test_remove_guests_unsuccessful
+
+    @room1.book_guest(@guest1)
+    outcome = @room1.remove_guests([@guest2, @guest3])
+
+    assert_equal(@testresult.guest_404, outcome)
+    assert_equal(9, @room1.remaining_spaces)
 
   end
 
