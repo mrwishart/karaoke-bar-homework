@@ -2,7 +2,7 @@ require_relative('message')
 
 class Room
 
-  attr_reader :name, :capacity, :room_fee, :individual_fee, :remaining_spaces, :reserved, :till_amount
+  attr_reader :name, :capacity, :room_fee, :individual_fee, :remaining_spaces, :reserved, :till_amount, :current_tab
 
   def initialize(name, capacity, room_fee, till_amount=100)
     @name = name
@@ -17,6 +17,7 @@ class Room
     @individual_fee = (1.2*@room_fee/@capacity).round(2)
     #Unless otherwise stated, float is 100
     @till_amount = till_amount
+    @current_tab = 0
     @result = Message.new
   end
 
@@ -49,6 +50,11 @@ class Room
 
     return @result.customer_cant_afford if !guest.can_afford?(@individual_fee)
 
+    return process_single_guest(guest)
+
+  end
+
+  def process_single_guest(guest)
     # Add guest
     @occupants << guest
     # Take money from customer (individual bookings paid upfront)
@@ -56,8 +62,7 @@ class Room
     # Put money in till
     add_to_till(@individual_fee)
 
-    return booking_successful
-
+    return booking_successful(guest)
   end
 
   def book_guests(guests, to_reserve=false)
@@ -67,20 +72,44 @@ class Room
     # Check if room is full
     return @result.room_full if @remaining_spaces < guests.count
 
-    #Only allow reservation change if room is currently empty
-    @reserved = to_reserve if @occupants.empty?
+    return (to_reserve ? group_booking(guests) :  multi_individual(guests))
+    
+  end
 
+  def add_multiple_guests(guests)
     # Add guests
     @occupants.concat(guests)
 
-    return booking_successful
+    return booking_successful(guests)
+  end
 
+  def multi_individual(guests)
+    return @result.customer_cant_afford if !check_group_of_guests(guests)
+
+    guests.each{|guest| process_single_guest(guest)}
+
+    return booking_successful(guests)
+
+  end
+
+  def group_booking(guests)
+    return @result.group_booking_fail if !@occupants.empty?
+
+    open_group_tab
+    @reserved = true
+
+    return add_multiple_guests(guests)
+  end
+
+  # Tests whether all guests can afford the room's individual fee
+  def check_group_of_guests(guests)
+    return guests.reduce(true) {|test, guest| test && guest.can_afford?(@individual_fee)}
   end
 
   def remove_guest(guest)
     #Check if room is empty
     return @result.room_empty if @occupants.empty?
-
+    # Can't remove individual guests from group booking
     return @result.group_cancel if @reserved
 
     removed_guest = @occupants.delete(guest)
@@ -109,6 +138,10 @@ class Room
 
   end
 
+  def open_group_tab
+    @current_tab += @room_fee
+  end
+
   def empty_room
     @occupants = []
     update_remaining_spaces
@@ -116,9 +149,9 @@ class Room
     return @result.room_emptied
   end
 
-  def booking_successful
+  def booking_successful(guest)
     update_remaining_spaces
-    return @result.room_booked
+    return @result.room_booked(guest)
   end
 
   def remove_successful

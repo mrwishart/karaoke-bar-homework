@@ -16,6 +16,10 @@ class Message
     return "Guest not found in this room"
   end
 
+  def group_booking_fail
+    return "Room isn't empty: Group booking failed"
+  end
+
   def group_cancel
     return "Can't remove single guest from reserved room. Must cancel whole group or unreserve room."
   end
@@ -32,8 +36,8 @@ class Message
     return "No bookings in room"
   end
 
-  def room_booked
-    return "Booking successful for"
+  def room_booked(guest)
+    return "Booking successful for #{guest}"
   end
 
   def list_occupants(occupants)

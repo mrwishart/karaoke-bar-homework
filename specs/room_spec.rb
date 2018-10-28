@@ -18,6 +18,7 @@ class RoomTest < MiniTest::Test
     @guest1 = Guest.new("Bob", 25, "Living on a Prayer", 200)
     @guest2 = Guest.new("Frank", 38, "Margaritaville", 300)
     @guest3 = Guest.new("Robert", 56, "Bohemian Rhapsody", 400)
+    @poorguest = Guest.new("Cletus", 87, "Hells Bells", 1)
 
     @allguests = [@guest1, @guest2, @guest3]
     @allsongs = [@song1, @song2, @song3]
@@ -51,7 +52,7 @@ class RoomTest < MiniTest::Test
   end
 
   def test_book_guest_successful
-    assert_equal(@testresult.room_booked, @room1.book_guest(@guest1))
+    assert_equal(@testresult.room_booked(@guest1), @room1.book_guest(@guest1))
     assert_equal(9, @room1.remaining_spaces)
   end
 
@@ -281,6 +282,38 @@ class RoomTest < MiniTest::Test
     @room1.book_guest(@guest2)
     assert_equal(136, @room1.till_amount)
     assert_equal(8, @room1.remaining_spaces)
+  end
+
+  def test_room_tab
+    assert_equal(0, @room1.current_tab)
+  end
+
+  def test_group_tab
+    @room1.open_group_tab
+    assert_equal(150, @room1.current_tab)
+  end
+
+  def test_range_of_guest_can_afford
+    assert_equal(true, @room1.check_group_of_guests(@allguests))
+  end
+
+  def test_range_of_guests_can_afford__false
+    assert_equal(false, @room1.check_group_of_guests(@allguests << @poorguest))
+  end
+
+  def test_group_tab_created
+    @room1.book_guests(@allguests, true)
+    assert_equal(150, @room1.current_tab)
+  end
+
+  def test_group_cant_be_done_on_nonempty_room
+
+    @room1.book_guest(@guest1)
+    @room1.book_guests([@guest2, @guest3], true)
+
+    assert_equal(9, @room1.remaining_spaces)
+    assert_equal(0, @room1.current_tab)
+
   end
 
 end
