@@ -316,4 +316,40 @@ class RoomTest < MiniTest::Test
 
   end
 
+  def test_pay_tab_early
+    assert_equal(@testresult.already_paid, @room1.pay_tab(@guest1, 50))
+    assert_equal(100, @room1.till_amount)
+
+  end
+
+  def test_pay_tab_customer_poor
+    @room1.book_guests([@guest2, @guest3], true)
+
+    assert_equal(@testresult.customer_cant_afford, @room1.pay_tab(@guest1, 5000))
+  end
+
+  def test_pay_tab
+
+    @room1.book_guests([@guest2, @guest3], true)
+
+    @room1.pay_tab(@guest2, 100)
+
+    assert_equal(50, @room1.current_tab)
+    assert_equal(200, @room1.till_amount)
+  end
+
+  def test_pay_overpay_tab
+    @room1.book_guests([@guest2, @guest3], true)
+
+    @room1.pay_tab(@guest3, 200)
+
+    assert_equal(0, @room1.current_tab)
+    assert_equal(250, @room1.till_amount)
+  end
+
+  def test_refund_customer_unsuccessful
+    assert_equal(@testresult.not_enough_in_till, @room1.refund_customer(@guest1, 500))
+    assert_equal(100, @room1.till_amount)
+  end
+
 end

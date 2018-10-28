@@ -15,7 +15,7 @@ class Room
     @room_fee = room_fee.round(2)
     #Individual booking is 20% extra
     @individual_fee = (1.2*@room_fee/@capacity).round(2)
-    #Unless otherwise stated, float is 100
+    #Unless otherwise stated, initial float is 100
     @till_amount = till_amount
     @current_tab = 0
     @result = Message.new
@@ -39,6 +39,10 @@ class Room
 
   def add_to_till(amount)
     @till_amount += amount
+  end
+
+  def remove_from_till(amount)
+    @till_amount -= amount
   end
 
   def book_guest(guest)
@@ -73,7 +77,7 @@ class Room
     return @result.room_full if @remaining_spaces < guests.count
 
     return (to_reserve ? group_booking(guests) :  multi_individual(guests))
-    
+
   end
 
   def add_multiple_guests(guests)
@@ -140,6 +144,42 @@ class Room
 
   def open_group_tab
     @current_tab += @room_fee
+  end
+
+  def pay_tab(guest, amount)
+    return @result.already_paid if @current_tab == 0
+
+    return @result.customer_cant_afford if !guest.can_afford?(amount)
+
+    return process_tab_payment(guest, amount)
+
+  end
+
+  def process_tab_payment(guest, amount)
+    guest.pay_money(amount)
+    # Put money in till
+    add_to_till(amount)
+    # Take off of tab
+    remove_from_tab(amount)
+
+    refund_customer(guest, -@current_tab) if @current_tab < 0
+
+    return @result.tab_payment_successful
+  end
+
+  def refund_customer(guest, payment)
+    return @result.not_enough_in_till if payment > @till_amount
+
+    remove_from_till(payment)
+
+    guest.receive_money(payment)
+
+    @current_tab = 0
+
+  end
+
+  def remove_from_tab(amount)
+    @current_tab -= amount
   end
 
   def empty_room

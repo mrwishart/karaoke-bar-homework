@@ -8,6 +8,10 @@ class Message
     return "Booked failed: Room is at capacity"
   end
 
+  def already_paid
+    return "Payment failed: Room tab has already been paid for"
+  end
+
   def customer_cant_afford
     return "Customer cant afford this transaction"
   end
@@ -30,6 +34,14 @@ class Message
 
   def guest_unbooked
     return "Guest successfully unbooked"
+  end
+
+  def not_enough_in_till
+    return "Refund unsuccessful: There's not enough in the till"
+  end
+
+  def tab_payment_successful
+    return "Payment accepted. Any change left over will have been refunded."
   end
 
   def room_empty
