@@ -8,6 +8,10 @@ class Message
     return "Booked failed: Room is at capacity"
   end
 
+  def customer_cant_afford
+    return "Customer cant afford this transaction"
+  end
+
   def guest_404
     return "Guest not found in this room"
   end

@@ -2,9 +2,9 @@ require_relative('message')
 
 class Room
 
-  attr_reader :name, :capacity, :room_fee, :individual_fee, :remaining_spaces, :reserved
+  attr_reader :name, :capacity, :room_fee, :individual_fee, :remaining_spaces, :reserved, :till_amount
 
-  def initialize(name, capacity, room_fee)
+  def initialize(name, capacity, room_fee, till_amount=100)
     @name = name
     @capacity = capacity
     #Room is initially empty
@@ -15,6 +15,8 @@ class Room
     @room_fee = room_fee.round(2)
     #Individual booking is 20% extra
     @individual_fee = (1.2*@room_fee/@capacity).round(2)
+    #Unless otherwise stated, float is 100
+    @till_amount = till_amount
     @result = Message.new
   end
 
@@ -34,6 +36,10 @@ class Room
     return @result.list_occupants(occupants_names)
   end
 
+  def add_to_till(amount)
+    @till_amount += amount
+  end
+
   def book_guest(guest)
     # Check if room is reserved
     return @result.room_reserved if @reserved
@@ -41,8 +47,14 @@ class Room
     # Check if room is full
     return @result.room_full if @remaining_spaces == 0
 
+    return @result.customer_cant_afford if !guest.can_afford?(@individual_fee)
+
     # Add guest
     @occupants << guest
+    # Take money from customer (individual bookings paid upfront)
+    guest.pay_money(@individual_fee)
+    # Put money in till
+    add_to_till(@individual_fee)
 
     return booking_successful
 
@@ -54,9 +66,6 @@ class Room
 
     # Check if room is full
     return @result.room_full if @remaining_spaces < guests.count
-
-    #See if group can afford room
-    #return @result.group_cant_afford if !can_group_afford(guests)
 
     #Only allow reservation change if room is currently empty
     @reserved = to_reserve if @occupants.empty?
@@ -108,21 +117,14 @@ class Room
   end
 
   def booking_successful
-
     update_remaining_spaces
-
     return @result.room_booked
-
   end
 
   def remove_successful
-
     update_remaining_spaces
-
     unreserve_room if @reserved
-
     return @result.guest_unbooked
-
   end
 
   def add_song(song)

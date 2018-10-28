@@ -267,4 +267,20 @@ class RoomTest < MiniTest::Test
 
   end
 
+  def test_inital_till_amount
+    assert_equal(100, @room1.till_amount)
+  end
+
+  def test_add_money_to_till
+    @room1.add_to_till(100)
+    assert_equal(200, @room1.till_amount)
+  end
+
+  def test_guest_booking_paid
+    @room1.book_guest(@guest1)
+    @room1.book_guest(@guest2)
+    assert_equal(136, @room1.till_amount)
+    assert_equal(8, @room1.remaining_spaces)
+  end
+
 end

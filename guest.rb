@@ -13,4 +13,8 @@ class Guest
     return @total_money >= price
   end
 
+  def pay_money(price)
+    @total_money -= price if can_afford?(price)
+  end
+
 end

@@ -28,4 +28,9 @@ class GuestTest < Minitest::Test
     assert_equal(false, @guest1.can_afford?(201))
   end
 
+  def test_pay_money
+    @guest1.pay_money(200)
+    assert_equal(false, @guest1.can_afford?(1))
+  end
+
 end
