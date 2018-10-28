@@ -128,6 +128,8 @@ class Room
     #Check if room is empty
     return @result.room_empty if @occupants.empty?
 
+    return @result.remove_guest_fail if @current_tab > 0
+
     #If reserved, clear entire booking
     return empty_room if @reserved
 

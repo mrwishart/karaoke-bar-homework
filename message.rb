@@ -8,6 +8,10 @@ class Message
     return "Booked failed: Room is at capacity"
   end
 
+  def remove_guest_fail
+    return "Can't remove guest: Bar tab still has to be paid"
+  end
+
   def already_paid
     return "Payment failed: Room tab has already been paid for"
   end

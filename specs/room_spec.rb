@@ -259,7 +259,8 @@ class RoomTest < MiniTest::Test
   def test_remove_two_guests_from_reserved_room
 
     @room1.book_guests(@allguests, true)
-
+    # Pay tab so group can leave
+    @room1.pay_tab(@guest2, 150)
     outcome = @room1.remove_guests([@guest1, @guest2])
 
     assert_equal(@testresult.room_emptied, outcome)
