@@ -115,7 +115,7 @@ class Room
     return @result.room_empty if @occupants.empty?
     # Can't remove individual guests from group booking
     return @result.group_cancel if @reserved
-
+    # No need to check for tab: Individual guest bookings are paid up front.
     removed_guest = @occupants.delete(guest)
 
     return @result.guest_404 if removed_guest.nil?
